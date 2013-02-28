@@ -1,3 +1,5 @@
+require "rubygems"
+
 task :default => [:generate]
 
 task :generate do
