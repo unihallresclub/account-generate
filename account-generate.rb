@@ -7,7 +7,7 @@ c = Whois::Client.new(:host=>'whois.uwa.edu.au')
 File.foreach('freshers.txt') { |l|
   name = l.chomp
 
-  query = "show people having '#{name}' as Full Name and Students as Department"
+  query = "show people having '#{name}' as name and Students as Department"
   puts query
   r = c.query(query, false)
   puts r
