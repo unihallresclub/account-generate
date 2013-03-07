@@ -2,20 +2,33 @@ require 'rubygems'
 require 'bundler/setup'
 require 'socket'
 
-puts "Writing results to results.txt"
-File.open('results.txt', 'w') do |r|
-  File.foreach('students.txt') do |n|
+OUTPUT = 'results.txt'
+INPUT = 'students.txt'
+
+names = 0
+single = 0
+multi = 0
+failure = 0
+
+File.open(OUTPUT, 'w') do |r|
+  puts "Reading input from #{INPUT}"
+
+  File.foreach(INPUT) do |n|
     name = n.chomp
+    names += 1
 
     s = TCPSocket.new 'whois.uwa.edu.au', 43
     s.puts "show people having #{name} as name and Students as Department\r\n"
 
     found = false
+    multidec = false
+
     while l = s.gets
       if m = l.match(/No matches were found/)
         puts "Could not resolve #{name}"
         r.puts "#{name}:?"
         found = true
+        failure += 1
         break
       end
 
@@ -23,6 +36,19 @@ File.open('results.txt', 'w') do |r|
         num = m.captures[0]
         puts "Resolved #{name} to #{num}"
         r.puts "#{name}:#{num}"
+
+        if found # If found is true, we've found a second result.
+          # Decrement the single counter the first time around the multi loop
+          # This prevents the first result from being counted as a single
+          unless multidec
+            single -= 1
+            multi += 1
+            multidec = true
+          end
+        else
+          single += 1
+        end
+
         found = true
       end
     end
@@ -30,6 +56,7 @@ File.open('results.txt', 'w') do |r|
     unless found
       puts "Encountered strange output for #{name}"
       r.puts "#{name}:??"
+      failure += 1
     end
 
     s.close
@@ -37,3 +64,9 @@ File.open('results.txt', 'w') do |r|
   end
 end
 
+puts ""
+puts "COMPLETE: Queryed #{names} names."
+puts "  #{failure} returned no results."
+puts "  #{single} returned a single result."
+puts "  #{multi} returned multiple results."
+puts "Results written to #{OUTPUT}"
