@@ -4,6 +4,7 @@ require 'socket'
 
 OUTPUT = 'results.txt'
 INPUT = 'students.txt'
+WHOIS_SERVER = 'whois.uwa.edu.au'
 
 names = 0
 single = 0
@@ -12,12 +13,13 @@ failure = 0
 
 File.open(OUTPUT, 'w') do |r|
   puts "Reading input from #{INPUT}"
+  puts "Querying against #{WHOIS_SERVER}"
 
   File.foreach(INPUT) do |n|
     name = n.chomp
     names += 1
 
-    s = TCPSocket.new 'whois.uwa.edu.au', 43
+    s = TCPSocket.new WHOIS_SERVER, 43
     s.puts "show people having #{name} as name and Students as Department\r\n"
 
     found = false
